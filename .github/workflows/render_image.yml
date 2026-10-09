@@ -1,0 +1,31 @@
+name: Image Manifest Render
+on: [workflow_dispatch]
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Map
+        uses: actions/checkout@v4
+
+      - name: Set up Headless Render Engine
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gnupg
+          wget -q -O - https://google.com | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://google.com stable main" >> /etc/etc/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Capture Secure Live Snap
+        run: |
+          # Use Chrome in the cloud to take a picture of the login page
+          google-chrome-stable --headless --disable-gpu --screenshot=feed_snapshot.png --window-size=1280,800 https://instagram.com
+
+      - name: Save Visual Asset
+        run: |
+          git config --global user.name "Image Pipeline"
+          git config --global user.email "pipeline@github.com"
+          git add feed_snapshot.png
+          git commit -m "Update visual frame matrix" || echo "No changes"
+          git push
